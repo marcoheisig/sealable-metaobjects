@@ -26,7 +26,7 @@
          previous (class-of current)))
 
 ;;; Attempts to reinitialize a sealed metaobject are silently ignored.
-(defmethod reinitialize-initialize :around
+(defmethod reinitialize-instance :around
     ((metaobject sealable-metaobject-mixin) &key &allow-other-keys)
   (unless (metaobject-sealed-p metaobject)
     (call-next-method)))
