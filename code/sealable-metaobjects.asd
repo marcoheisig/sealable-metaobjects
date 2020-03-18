@@ -2,7 +2,7 @@
   :author "Marco Heisig <marco.heisig@fau.de>"
   :description "A CLOSsy way to trade genericity for performance."
   :license "MIT"
-  :depends-on ("closer-mop" "trivial-macroexpand-all")
+  :depends-on ("closer-mop")
 
   :serial t
   :components
