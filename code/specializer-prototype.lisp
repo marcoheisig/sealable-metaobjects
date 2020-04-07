@@ -68,24 +68,43 @@
   (remove-duplicates
    (mapcar #'upgraded-array-element-type
            (append '(short-float single-float double-float long-float base-char character t)
+                   '((complex short-float)
+                     (complex single-float)
+                     (complex double-float)
+                     (complex long-float))
                    (loop for bits from 1 to 64
                          collect `(unsigned-byte ,bits)
                          collect `(signed-byte ,bits))))
    :test #'equal))
+
+(defun array-initial-element (element-type)
+  (cond ((subtypep element-type 'number)
+         (coerce 0 element-type))
+        ((subtypep element-type 'character)
+         (coerce #\0 element-type))
+        (t t)))
 
 ;; Register vector and array prototypes.
 (loop for adjustable in '(nil t) do
   (loop for fill-pointer in '(nil t) do
     (loop for dimensions in '(() (2) (2 2)) do
       (loop for element-type in *array-element-types* do
-        (let ((storage-vector (make-array (reduce #'* dimensions) :element-type element-type)))
-          (loop for displaced-to in (list nil storage-vector) do
-            (register-class-prototype
-             (make-array dimensions
-                         :adjustable adjustable
-                         :fill-pointer (and (= 1 (length dimensions)) fill-pointer)
-                         :element-type element-type
-                         :displaced-to displaced-to))))))))
+        (let ((storage-vector
+                (make-array (reduce #'* dimensions)
+                            :element-type element-type
+                            :initial-element (array-initial-element element-type))))
+          (register-class-prototype
+           (make-array dimensions
+                       :adjustable adjustable
+                       :fill-pointer (and (= 1 (length dimensions)) fill-pointer)
+                       :element-type element-type
+                       :displaced-to storage-vector))
+          (register-class-prototype
+           (make-array dimensions
+                       :adjustable adjustable
+                       :fill-pointer (and (= 1 (length dimensions)) fill-pointer)
+                       :element-type element-type
+                       :initial-element (array-initial-element element-type))))))))
 
 ;; Register integer and rational prototypes.
 (loop for integer in '(19 1337 1338 91676) do
