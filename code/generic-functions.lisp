@@ -1,5 +1,100 @@
 (in-package #:sealable-metaobjects)
 
+;;; Working with specializers.
+
+(defgeneric ensure-specializer (specializer-designator)
+  (:method ((class class))
+    class)
+  (:method ((symbol symbol))
+    (or (find-class symbol nil)
+        (call-next-method)))
+  (:method ((cons cons))
+    (if (typep cons '(cons (eql eql) (cons t null)))
+        (intern-eql-specializer (second cons))
+        (call-next-method)))
+  (:method ((object t))
+    (error "~@<~S is not a specializer, or a type designator that ~
+                can be converted to a specializer.~:@>"
+           object)))
+
+(defgeneric specializer-type (specializer)
+  (:method ((class class))
+    (class-name class))
+  (:method ((eql-specializer eql-specializer))
+    `(eql ,(eql-specializer-object eql-specializer))))
+
+(defgeneric specializer-prototype (specializer &optional excluded-specializers)
+  (:documentation
+   "Returns an object that is of the type indicated by SPECIALIZER, but not
+of any of the types indicated the optionally supplied
+EXCLUDED-SPECIALIZERS.  Returns a secondary value of T if such an object
+could be determined, and NIL if no such object was found.
+
+Examples:
+ (specializer-prototype
+   (find-class 'double-float))
+ => 5.0d0, T
+
+ (specializer-prototype
+   (find-class 'double-float)
+   (list (intern-eql-specializer 5.0d0)))
+ => 6.0d0, T
+
+ (specializer-prototype
+   (find-class 'real)
+   (list (find-class 'rational) (find-class 'float)))
+ => NIL, NIL
+"))
+
+(defgeneric specializer-direct-superspecializers (specializer)
+  (:method ((class class))
+    (class-direct-superclasses class))
+  (:method ((eql-specializer eql-specializer))
+    (list
+     (class-of
+      (eql-specializer-object eql-specializer)))))
+
+(defgeneric specializer-intersectionp (specializer-1 specializer-2)
+  (:method ((class-1 class) (class-2 class))
+    (multiple-value-bind (disjointp success)
+        (subtypep `(and ,class-1 ,class-2) nil)
+      (assert success)
+      (not disjointp)))
+  (:method ((class class) (eql-specializer eql-specializer))
+    (typep (eql-specializer-object eql-specializer) class))
+  (:method ((eql-specializer eql-specializer) (class class))
+    (typep (eql-specializer-object eql-specializer) class))
+  (:method ((eql-specializer-1 eql-specializer) (eql-specializer-2 eql-specializer))
+    (eql (eql-specializer-object eql-specializer-1)
+         (eql-specializer-object eql-specializer-2))))
+
+(defgeneric specializer-subsetp (specializer-1 specializer-2)
+  (:method ((class-1 class) (class-2 class))
+    (values (subtypep class-1 class-2)))
+  (:method ((class class) (eql-specializer eql-specializer))
+    (subtypep class (specializer-type eql-specializer)))
+  (:method ((eql-specializer eql-specializer) (class class))
+    (typep (eql-specializer-object eql-specializer) class))
+  (:method ((eql-specializer-1 eql-specializer) (eql-specializer-2 eql-specializer))
+    (eql (eql-specializer-object eql-specializer-1)
+         (eql-specializer-object eql-specializer-2))))
+
+;;; Working with domains.
+
+(defgeneric ensure-domain (domain-designator))
+
+(defgeneric method-domain (method))
+
+(defgeneric domain-specializers (domain))
+
+(defgeneric domain-arity (domain))
+
+(defgeneric domain-equal (domain-1 domain-2))
+
+(defgeneric domain-intersectionp (domain-1 domain-2))
+
+(defgeneric domain-subsetp (domain-1 domain-2))
+
 ;;; Checking for sealability.
 
 (defgeneric metaobject-sealable-p (metaobject)
@@ -113,80 +208,6 @@
      (class-of
       (eql-specializer-object eql-specializer)))))
 
-;;; Working with specializers.
-
-(defgeneric specializer-type (specializer)
-  (:method ((class class))
-    (class-name class))
-  (:method ((eql-specializer eql-specializer))
-    `(eql ,(eql-specializer-object eql-specializer))))
-
-(defgeneric specializer-prototype (specializer &optional excluded-specializers)
-  (:documentation
-   "Returns an object that is of the type indicated by SPECIALIZER, but not
-of any of the types indicated the optionally supplied
-EXCLUDED-SPECIALIZERS.  Returns a secondary value of T if such an object
-could be determined, and NIL if no such object was found.
-
-Examples:
- (specializer-prototype
-   (find-class 'double-float))
- => 5.0d0, T
-
- (specializer-prototype
-   (find-class 'double-float)
-   (list (intern-eql-specializer 5.0d0)))
- => 6.0d0, T
-
- (specializer-prototype
-   (find-class 'real)
-   (list (find-class 'rational) (find-class 'float)))
- => NIL, NIL
-"))
-
-(defgeneric specializer-direct-superspecializers (specializer)
-  (:method ((class class))
-    (class-direct-superclasses class))
-  (:method ((eql-specializer eql-specializer))
-    (list
-     (class-of
-      (eql-specializer-object eql-specializer)))))
-
-(defgeneric specializer-intersectionp (specializer-1 specializer-2)
-  (:method ((class-1 class) (class-2 class))
-    (multiple-value-bind (disjointp success)
-        (subtypep `(and ,class-1 ,class-2) nil)
-      (assert success)
-      (not disjointp)))
-  (:method ((class class) (eql-specializer eql-specializer))
-    (typep (eql-specializer-object eql-specializer) class))
-  (:method ((eql-specializer eql-specializer) (class class))
-    (typep (eql-specializer-object eql-specializer) class))
-  (:method ((eql-specializer-1 eql-specializer) (eql-specializer-2 eql-specializer))
-    (eql (eql-specializer-object eql-specializer-1)
-         (eql-specializer-object eql-specializer-2))))
-
-(defgeneric specializer-subtypep (specializer-1 specializer-2)
-  (:method ((class-1 class) (class-2 class))
-    (values (subtypep class-1 class-2)))
-  (:method ((class class) (eql-specializer eql-specializer))
-    (subtypep class (specializer-type eql-specializer)))
-  (:method ((eql-specializer eql-specializer) (class class))
-    (typep (eql-specializer-object eql-specializer) class))
-  (:method ((eql-specializer-1 eql-specializer) (eql-specializer-2 eql-specializer))
-    (eql (eql-specializer-object eql-specializer-1)
-         (eql-specializer-object eql-specializer-2))))
-
-(defun domain-intersectionp (domain-1 domain-2)
-  (assert (= (length domain-1)
-             (length domain-2)))
-  (every #'specializer-intersectionp domain-1 domain-2))
-
-(defun domain-subtypep (domain-1 domain-2)
-  (assert (= (length domain-1)
-             (length domain-2)))
-  (every #'specializer-subtypep domain-1 domain-2))
-
 ;;; Method properties
 
 (defgeneric method-properties (method)
@@ -206,8 +227,20 @@ Examples:
 (defgeneric compute-static-call-signatures (generic-function domain))
 
 (defgeneric externalizable-object-p (object)
+  ;; Built-in objects are usually externalizable.
   (:method ((object t))
     (typep (class-of object) 'built-in-class))
-  (:method ((structure-object structure-object)) t)
+  ;; Functions are not externalizable by definition.
+  (:method ((function function))
+    nil)
+  ;; Structure objects may be externalizable even without an appropriate
+  ;; method on MAKE-LOAD-FORM.
+  (:method ((structure-object structure-object))
+    ;; TODO: Returning T here is a bit bold.  Actually we'd have to check
+    ;; whether each slot of the structure has a value that is
+    ;; externalizable.
+    t)
+  ;; Standard objects are only externalizable if they have an appropriate
+  ;; method on MAKE-LOAD-FORM.
   (:method ((standard-object standard-object))
     (and (make-load-form standard-object) t)))

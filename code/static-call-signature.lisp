@@ -39,11 +39,11 @@
 
 (defmethod compute-static-call-signatures
     ((sgf sealable-generic-function)
-     (domain list))
+     (domain domain))
   (let* ((sealed-methods
            (remove-if-not
             (lambda (method)
-              (domain-intersectionp (method-specializers method) domain))
+              (domain-intersectionp (method-domain method) domain))
             (generic-function-methods sgf)))
          (list-of-specializers
            (mapcar #'method-specializers sealed-methods))
@@ -62,19 +62,20 @@
     static-call-signatures))
 
 (defun map-types-and-prototypes (fn specializers-list domain)
-  (assert (= (length specializers-list) (length domain)))
-  (labels ((rec (sl domain types prototypes)
+  (assert (= (length specializers-list)
+             (domain-arity domain)))
+  (labels ((rec (sl specializers types prototypes)
              (if (null sl)
                  (funcall fn (reverse types) (reverse prototypes))
                  (loop for (type prototype)
                          in (type-prototype-pairs
                              (first sl)
-                             (first domain))
+                             (first specializers))
                        do (rec (rest sl)
-                               (rest domain)
+                               (rest specializers)
                                (cons type types)
                                (cons prototype prototypes))))))
-    (rec specializers-list domain '() '())))
+    (rec specializers-list (domain-specializers domain) '() '())))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

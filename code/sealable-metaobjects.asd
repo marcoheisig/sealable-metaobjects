@@ -9,6 +9,7 @@
   ((:file "packages")
    (:file "utilities")
    (:file "generic-functions")
+   (:file "domain")
 
    ;; Sealable Metaobjects.
    (:file "sealable-metaobject-mixin")

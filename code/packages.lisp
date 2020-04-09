@@ -3,6 +3,21 @@
 (defpackage #:sealable-metaobjects
   (:use #:closer-common-lisp)
   (:export
+   #:ensure-specializer
+   #:specializer-type
+   #:specializer-prototype
+   #:specializer-direct-superspecializers
+   #:specializer-intersectionp
+   #:specializer-subsetp
+
+   #:domain
+   #:ensure-domain
+   #:method-domain
+   #:domain-specializers
+   #:domain-arity
+   #:domain-equal
+   #:domain-intersectionp
+   #:domain-subsetp
 
    #:metaobject-sealable-p
    #:class-sealable-p
@@ -21,14 +36,6 @@
    #:seal-method
    #:seal-domain
    #:seal-specializer
-
-   #:specializer-type
-   #:specializer-prototype
-   #:specializer-direct-superspecializers
-   #:specializer-intersectionp
-   #:specializer-subtypep
-   #:domain-intersectionp
-   #:domain-subtypep
 
    #:method-properties
    #:validate-method-property

@@ -1,26 +1,14 @@
 (in-package #:sealable-metaobjects)
 
+(defun required-argument (name)
+  (error "Required argument: ~S" name))
+
 (defun starts-with (item)
   (lambda (sequence)
     (typecase sequence
       (list (eql (first sequence) item))
       (sequence (eql (elt sequence 0) item))
       (otherwise nil))))
-
-(defgeneric ensure-specializer (object)
-  (:method ((class class))
-    class)
-  (:method ((symbol symbol))
-    (or (find-class symbol nil)
-        (call-next-method)))
-  (:method ((cons cons))
-    (if (typep cons '(cons (eql eql) (cons t null)))
-        (intern-eql-specializer (second cons))
-        (call-next-method)))
-  (:method ((object t))
-    (error "~@<~S is not a specializer, or a type designator that ~
-                can be converted to a specializer.~:@>"
-           object)))
 
 (defun type-specifier-and (&rest type-specifiers)
   (let ((relevant (remove t type-specifiers)))
