@@ -28,8 +28,9 @@
 ;;; Attempts to reinitialize a sealed metaobject are silently ignored.
 (defmethod reinitialize-instance :around
     ((metaobject sealable-metaobject-mixin) &key &allow-other-keys)
-  (unless (metaobject-sealed-p metaobject)
-    (call-next-method)))
+  (if (metaobject-sealed-p metaobject)
+      metaobject
+      (call-next-method)))
 
 ;;; It is an error to change the class of an instance of a sealable
 ;;; metaobject.
