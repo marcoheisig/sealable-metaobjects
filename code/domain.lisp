@@ -10,6 +10,11 @@
     :initarg :arity
     :reader domain-arity)))
 
+(defmethod print-object ((domain domain) stream)
+  (print-unreadable-object (domain stream :type t)
+    (format stream "~{~S~^ ~}"
+            (mapcar #'specializer-type (domain-specializers domain)))))
+
 (defun make-domain (specializers &aux (arity (list-length specializers)))
   (dolist (specializer specializers)
     (check-type specializer specializer))
