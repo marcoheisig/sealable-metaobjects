@@ -1,5 +1,7 @@
 #+TITLE: Sealable Metaobjects
 
+[[https://heisig.xyz/sealable-metaobjects.jpg]]
+
 * Introduction
 We present an extension of the Common Lisp Object System (CLOS) that allows
 a compiler to inline a generic function under certain conditions.
