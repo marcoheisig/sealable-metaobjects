@@ -84,7 +84,8 @@
       (error "~@<Cannot add the method ~S with specializers ~S to ~
                  the sealed generic function ~S, because it intersects ~
                  with the existing sealed domain ~S.~:@>"
-             psm (method-specializers psm) sgf (mapcar #'specializer-type domain)))))
+             psm (method-specializers psm)
+             sgf (mapcar #'specializer-type (domain-specializers domain))))))
 
 ;;; Ensure that the method to be removed is disjoint from all sealed domains.
 (defmethod remove-method :before
