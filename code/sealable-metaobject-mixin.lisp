@@ -1,8 +1,7 @@
 (in-package #:sealable-metaobjects)
 
 (defclass sealable-metaobject-mixin ()
-  ((%sealed-p :initform nil :reader metaobject-sealed-p))
-  (:documentation ""))
+  ((%sealed-p :initform nil :reader metaobject-sealed-p)))
 
 (defmethod metaobject-sealable-p ((metaobject sealable-metaobject-mixin))
   t)

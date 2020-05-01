@@ -80,7 +80,7 @@
     ((sgf sealable-generic-function)
      (psm potentially-sealable-method))
   (dolist (domain (sealed-domains sgf))
-    (when (domain-intersectionp domain (method-specializers psm))
+    (when (domain-intersectionp domain (method-domain psm))
       (error "~@<Cannot add the method ~S with specializers ~S to ~
                  the sealed generic function ~S, because it intersects ~
                  with the existing sealed domain ~S.~:@>"
