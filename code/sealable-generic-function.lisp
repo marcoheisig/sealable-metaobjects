@@ -4,7 +4,8 @@
   ((%sealed-domains
     :initform '()
     :type list
-    :accessor sealed-domains))
+    :reader sealed-domains
+    :writer (setf %sealed-domains)))
   (:default-initargs
    :method-class (find-class 'potentially-sealable-method))
   (:metaclass funcallable-standard-class))
@@ -61,7 +62,8 @@
                (mapcar #'specializer-type (method-specializers method))
                (mapcar #'specializer-type (domain-specializers domain))))
       (seal-method method)))
-  (push domain (sealed-domains sgf)))
+  (setf (%sealed-domains sgf)
+        (cons domain (sealed-domains sgf))))
 
 ;;; Skip the call to add-method if the list of specializers is equal to
 ;;; that of an existing, sealed method.

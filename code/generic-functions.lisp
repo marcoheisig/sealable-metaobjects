@@ -220,9 +220,9 @@ Examples:
 
 ;;; Miscellaneous
 
-(defgeneric sealed-domains (generic-function))
-
-(defgeneric (setf sealed-domains) (value generic-function))
+(defgeneric sealed-domains (generic-function)
+  (:method ((generic-function generic-function))
+    '()))
 
 (defgeneric compute-static-call-signatures (generic-function domain))
 
