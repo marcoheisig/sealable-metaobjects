@@ -170,7 +170,9 @@ Examples:
     (unless (class-finalized-p class)
       (finalize-inheritance class))
     ;; A sealed class must have sealed superclasses.
-    (mapc #'seal-class (rest (class-precedence-list class)))))
+    (loop for class in (rest (class-precedence-list class))
+          until (member class *standard-metaobjects*)
+          do (seal-class class))))
 
 (defgeneric seal-class (class)
   ;; Invoke primary methods on SEAL-CLASS at most once.

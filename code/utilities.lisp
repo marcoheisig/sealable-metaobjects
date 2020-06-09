@@ -26,3 +26,10 @@
   (cond ((eql type-specifier t) nil)
         ((eql type-specifier nil) t)
         (t `(not ,type-specifier))))
+
+(defparameter *standard-metaobjects*
+  (list (find-class 'standard-object)
+        (find-class 'standard-class)
+        (find-class 'standard-generic-function)
+        (find-class 'standard-method)
+        (find-class 'built-in-class)))
